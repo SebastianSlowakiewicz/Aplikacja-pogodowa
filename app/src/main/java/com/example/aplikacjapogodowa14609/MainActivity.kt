@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aplikacjapogodowa14609.network.RetrofitInstance
 import kotlinx.coroutines.launch
-import java.net.URLEncoder
 
 data class ClothingInfo(
     val summary: String,
@@ -71,8 +70,7 @@ class MainActivity : ComponentActivity() {
                     else -> "Inna ($code)"
                 }
             }
-
-            fun updateClothingAdvice(temperature: Double, wind: Double, rain: Int, snow: Int) {
+            fun updateClothingAdvice(temperature: Double, wind: Double, rain: Double, snow: Double) {
                 isRainingNow = rain > 0 || snow > 0
                 isWindyNow = wind > 6.0
 
@@ -123,14 +121,12 @@ class MainActivity : ComponentActivity() {
                 if (cityInput.isNotBlank()) {
                     scope.launch {
                         try {
-                            val encodedLocation = URLEncoder.encode(cityInput.trim(), "UTF-8")
-
                             val response = RetrofitInstance.api.getRealtimeWeather(
-                                location = encodedLocation,
+                                location = cityInput.trim(),
                                 apiKey = "MlCggxYrDOHLF0dLgJq9gDxdw3osDjWG"
                             )
-                            val data = response.data.values
 
+                            val data = response.data.values
                             cityName = response.location.name
                             temp = "${data.temperature.toInt()}°C"
                             tempApparent = "${data.temperatureApparent.toInt()}°C"
@@ -157,6 +153,7 @@ class MainActivity : ComponentActivity() {
                         } catch (e: retrofit2.HttpException) {
                             cityName = if (e.code() == 429) {
                                 "Przekroczono limit zapytań. Spróbuj za godzinę."
+
                             } else {
                                 "Błąd serwera: ${e.code()}"
                             }
